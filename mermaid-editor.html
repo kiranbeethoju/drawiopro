@@ -93,6 +93,38 @@
 
         .preview-panel .panel-header {
             background: #e8e8e8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .zoom-btn {
+            padding: 4px 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+
+        .zoom-level {
+            font-size: 12px;
+            color: #555;
+            min-width: 45px;
+            text-align: center;
         }
 
         #code-editor {
@@ -277,7 +309,15 @@ graph TD
         <div class="resize-handle" id="resize-handle"></div>
 
         <div class="preview-panel">
-            <div class="panel-header">Diagram Preview</div>
+            <div class="panel-header">
+                <span>Diagram Preview</span>
+                <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">−</button>
+                    <span class="zoom-level" id="zoom-level">100%</span>
+                    <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">+</button>
+                    <button class="zoom-btn" onclick="resetZoom()" title="Reset Zoom">Reset</button>
+                </div>
+            </div>
             <div id="diagram-container">
                 <div id="diagram-svg"></div>
             </div>
@@ -311,6 +351,49 @@ graph TD
         const statusBar = document.getElementById('status-bar');
         const statusMessage = document.getElementById('status-message');
         const cursorPosition = document.getElementById('cursor-position');
+        const zoomLevelDisplay = document.getElementById('zoom-level');
+
+        // Zoom functionality
+        let currentZoom = 1;
+        const zoomStep = 0.1;
+        const minZoom = 0.25;
+        const maxZoom = 3;
+
+        function zoomIn() {
+            currentZoom = Math.min(currentZoom + zoomStep, maxZoom);
+            applyZoom();
+        }
+
+        function zoomOut() {
+            currentZoom = Math.max(currentZoom - zoomStep, minZoom);
+            applyZoom();
+        }
+
+        function resetZoom() {
+            currentZoom = 1;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            const svgElement = diagramSvg.querySelector('svg');
+            if (svgElement) {
+                svgElement.style.transform = `scale(${currentZoom})`;
+                svgElement.style.transformOrigin = 'top center';
+                svgElement.style.display = 'block';
+                svgElement.style.width = '100%';
+            }
+            zoomLevelDisplay.textContent = Math.round(currentZoom * 100) + '%';
+        }
+
+        // Also support mouse wheel zoom
+        document.getElementById('diagram-container').addEventListener('wheel', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -zoomStep : zoomStep;
+                currentZoom = Math.max(minZoom, Math.min(maxZoom, currentZoom + delta));
+                applyZoom();
+            }
+        });
 
         let currentCode = '';
 
@@ -343,6 +426,9 @@ graph TD
                     svgElement.style.height = 'auto';
                     svgElement.style.background = 'white';
                 }
+
+                // Apply current zoom level
+                applyZoom();
 
                 showStatus('Diagram rendered successfully');
             } catch (error) {
