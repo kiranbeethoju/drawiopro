@@ -511,6 +511,15 @@ graph TD
             }
         });
 
+        // Auto-render on input changes with debouncing
+        let renderTimeout;
+        codeEditor.addEventListener('input', function() {
+            clearTimeout(renderTimeout);
+            renderTimeout = setTimeout(function() {
+                renderDiagram();
+            }, 500); // Wait 500ms after typing stops before rendering
+        });
+
         // Resize handle functionality
         const resizeHandle = document.getElementById('resize-handle');
         const editorPanel = document.querySelector('.editor-panel');
