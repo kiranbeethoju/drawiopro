@@ -1,4 +1,4 @@
-# Mermaid Workflow Editor
+# drawiopro
 
 A simple, standalone web tool for creating, editing, and exporting Mermaid diagrams. No server or installation required - just open the HTML file in your browser.
 

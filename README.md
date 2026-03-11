@@ -38,7 +38,7 @@ Options for running draw.io:
 - Use the [official Docker image](https://github.com/jgraph/docker-drawio)
 - Download [draw.io Desktop](https://get.diagrams.net)
 
-### Mermaid Workflow Editor
+### drawiopro
 
 A standalone web tool for creating, editing, and exporting Mermaid diagrams is included in this repository.
 
