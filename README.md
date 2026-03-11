@@ -50,7 +50,8 @@ Or simply double-click `mermaid-editor.html` in your file manager.
 
 **Features:**
 - Code editor with Mermaid syntax highlighting
-- Live preview panel
+- **Auto-render** - Updates automatically as you type
+- Live preview panel with **zoom controls** (zoom in/out, reset, mouse wheel)
 - Pre-built templates (flowcharts, sequence diagrams, Gantt charts, etc.)
 - Load/save Mermaid code files (.mmd)
 - Export diagrams as SVG

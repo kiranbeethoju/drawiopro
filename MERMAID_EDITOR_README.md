@@ -5,7 +5,9 @@ A simple, standalone web tool for creating, editing, and exporting Mermaid diagr
 ## Features
 
 - **Code Editor** - Write Mermaid syntax with line/column tracking
+- **Auto-Render** - Diagram updates automatically as you type
 - **Live Preview** - Render diagrams instantly on a canvas
+- **Zoom Controls** - Zoom in/out buttons and mouse wheel support
 - **Templates** - Quick-start templates for multiple diagram types
 - **Load/Save** - Import and export Mermaid code files
 - **Export SVG** - Download rendered diagrams as SVG images
@@ -31,12 +33,18 @@ Use the left panel to write your Mermaid diagram code.
 
 ### 3. Render the Diagram
 
-- Click the **Render** button
+The diagram **auto-renders** as you type (500ms delay after typing stops).
+- Click the **Render** button for immediate update
 - Or press `Ctrl+Enter` (Windows/Linux) or `Cmd+Enter` (Mac)
 
 ### 4. View the Result
 
 The rendered diagram appears in the right panel.
+
+**Zoom Controls:**
+- Click `+` / `−` buttons to zoom in/out
+- Click `Reset` to return to 100%
+- Hold `Ctrl` + scroll wheel to zoom
 
 ### 5. Save or Export
 
@@ -123,11 +131,13 @@ stateDiagram-v2
 
 ## Tips
 
-1. **Resize panels** - Drag the vertical divider between editor and preview
-2. **Quick render** - Use `Ctrl+Enter` or `Cmd+Enter` keyboard shortcut
-3. **Scroll preview** - If diagram is large, use scrollbars in preview panel
-4. **Export** - SVG exports work great for presentations and documents
-5. **Templates** - Start with a template to learn the syntax
+1. **Auto-render** - Diagram updates automatically as you type (500ms delay)
+2. **Zoom** - Use `+`/`−` buttons or `Ctrl + scroll wheel` to zoom the preview
+3. **Resize panels** - Drag the vertical divider between editor and preview
+4. **Quick render** - Use `Ctrl+Enter` or `Cmd+Enter` keyboard shortcut
+5. **Scroll preview** - If diagram is large, use scrollbars in preview panel
+6. **Export** - SVG exports work great for presentations and documents
+7. **Templates** - Start with a template to learn the syntax
 
 ## Requirements
 
