@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mermaid Workflow Editor</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #252526;
+            padding: 10px 20px;
+            border-bottom: 1px solid #3c3c3c;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 50px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4fc1ff;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #0e639c;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1177bb;
+        }
+
+        .btn-secondary {
+            background: #3c3c3c;
+            color: #d4d4d4;
+        }
+
+        .btn-secondary:hover {
+            background: #4c4c4c;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+
+        .editor-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #3c3c3c;
+        }
+
+        .panel-header {
+            background: #f0f0f0;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #555;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .preview-panel .panel-header {
+            background: #e8e8e8;
+        }
+
+        #code-editor {
+            flex: 1;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        #code-editor::placeholder {
+            color: #6a6a6a;
+        }
+
+        .preview-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+
+        #diagram-container {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px;
+            min-height: 0;
+        }
+
+        #diagram-svg {
+            display: inline-block;
+        }
+
+        #diagram-svg svg {
+            display: block;
+            max-width: none;
+            height: auto;
+        }
+
+        .status-bar {
+            background: #007acc;
+            color: white;
+            padding: 4px 16px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-message {
+            flex: 1;
+        }
+
+        .status-error {
+            background: #c42b1c;
+        }
+
+        .resize-handle {
+            width: 4px;
+            background: #3c3c3c;
+            cursor: col-resize;
+            transition: background 0.2s;
+        }
+
+        .resize-handle:hover {
+            background: #0e639c;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #424242;
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5c5c5c;
+        }
+
+        /* Preview panel scrollbar */
+        #diagram-container::-webkit-scrollbar-track {
+            background: #f5f5f5;
+        }
+
+        #diagram-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border: 2px solid #f5f5f5;
+        }
+
+        #diagram-container::-webkit-scrollbar-thumb:hover {
+            background: #a0a0a0;
+        }
+
+        /* File input styling */
+        #file-input {
+            display: none;
+        }
+
+        /* Sample buttons */
+        .sample-buttons {
+            display: flex;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #252526;
+            border-bottom: 1px solid #3c3c3c;
+            flex-wrap: wrap;
+        }
+
+        .sample-btn {
+            padding: 4px 12px;
+            background: #3c3c3c;
+            border: 1px solid #4c4c4c;
+            border-radius: 3px;
+            color: #d4d4d4;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sample-btn:hover {
+            background: #4c4c4c;
+            border-color: #5c5c5c;
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mermaid Workflow Editor</h1>
+        <div class="header-buttons">
+            <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">Load File</button>
+            <input type="file" id="file-input" accept=".mmd,.mermaid,.txt" onchange="loadFile(event)">
+            <button class="btn btn-secondary" onclick="saveDiagram()">Save</button>
+            <button class="btn btn-secondary" onclick="exportSVG()">Export SVG</button>
+            <button class="btn btn-primary" onclick="renderDiagram()">Render</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="editor-panel">
+            <div class="panel-header">Mermaid Code Editor</div>
+            <div class="sample-buttons">
+                <span style="color: #858585; font-size: 12px; display: flex; align-items: center;">Templates:</span>
+                <button class="sample-btn" onclick="loadTemplate('flowchart')">Flowchart</button>
+                <button class="sample-btn" onclick="loadTemplate('sequence')">Sequence</button>
+                <button class="sample-btn" onclick="loadTemplate('gantt')">Gantt</button>
+                <button class="sample-btn" onclick="loadTemplate('class')">Class Diagram</button>
+                <button class="sample-btn" onclick="loadTemplate('state')">State</button>
+            </div>
+            <textarea id="code-editor" placeholder="Enter your Mermaid diagram code here...
+
+Example:
+graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action 1]
+    B -->|No| D[Action 2]
+    C --> E[End]
+    D --> E"></textarea>
+        </div>
+
+        <div class="resize-handle" id="resize-handle"></div>
+
+        <div class="preview-panel">
+            <div class="panel-header">Diagram Preview</div>
+            <div id="diagram-container">
+                <div id="diagram-svg"></div>
+            </div>
+            <div class="status-bar" id="status-bar">
+                <span class="status-message" id="status-message">Ready</span>
+                <span id="cursor-position">Line: 1, Col: 1</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            securityLevel: 'loose',
+            themeVariables: {
+                background: '#ffffff',
+                primaryColor: '#e1f5fe',
+                primaryTextColor: '#000000',
+                primaryBorderColor: '#0277bd',
+                lineColor: '#333333',
+                secondaryColor: '#f5f5f5',
+                tertiaryColor: '#eeeeee',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            }
+        });
+
+        const codeEditor = document.getElementById('code-editor');
+        const diagramSvg = document.getElementById('diagram-svg');
+        const statusBar = document.getElementById('status-bar');
+        const statusMessage = document.getElementById('status-message');
+        const cursorPosition = document.getElementById('cursor-position');
+
+        let currentCode = '';
+
+        // Render diagram function
+        async function renderDiagram() {
+            currentCode = codeEditor.value.trim();
+
+            if (!currentCode) {
+                showStatus('Please enter some Mermaid code', 'error');
+                diagramSvg.innerHTML = '';
+                return;
+            }
+
+            try {
+                // Clear previous diagram
+                diagramSvg.innerHTML = '';
+
+                // Generate unique ID for this render
+                const id = 'mermaid-diagram-' + Date.now();
+                const { svg } = await mermaid.render(id, currentCode);
+
+                // Update the diagram container
+                diagramSvg.innerHTML = svg;
+
+                // Ensure SVG is visible and properly styled
+                const svgElement = diagramSvg.querySelector('svg');
+                if (svgElement) {
+                    svgElement.style.display = 'block';
+                    svgElement.style.maxWidth = 'none';
+                    svgElement.style.height = 'auto';
+                    svgElement.style.background = 'white';
+                }
+
+                showStatus('Diagram rendered successfully');
+            } catch (error) {
+                console.error('Mermaid render error:', error);
+                showStatus('Error: ' + error.message, 'error');
+                diagramSvg.innerHTML = `<div style="color: #c62828; padding: 20px; text-align: center; background: #ffebee; border-radius: 4px; margin: 20px;">
+                    <strong style="font-size: 16px;">Rendering Error</strong><br><br>
+                    ${escapeHtml(error.message)}
+                </div>`;
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            statusMessage.textContent = message;
+            if (type === 'error') {
+                statusBar.classList.add('status-error');
+            } else {
+                statusBar.classList.remove('status-error');
+            }
+        }
+
+        // Escape HTML for error messages
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load file
+        function loadFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    codeEditor.value = e.target.result;
+                    renderDiagram();
+                };
+                reader.readAsText(file);
+            }
+            // Reset input so same file can be selected again
+            event.target.value = '';
+        }
+
+        // Save diagram
+        function saveDiagram() {
+            const blob = new Blob([codeEditor.value], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'diagram.mmd';
+            a.click();
+            URL.revokeObjectURL(url);
+            showStatus('Diagram saved as diagram.mmd');
+        }
+
+        // Export as SVG
+        function exportSVG() {
+            const svgElement = diagramSvg.querySelector('svg');
+            if (!svgElement) {
+                showStatus('No diagram to export. Please render first.', 'error');
+                return;
+            }
+
+            const svgData = new XMLSerializer().serializeToString(svgElement);
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'diagram.svg';
+            a.click();
+            URL.revokeObjectURL(url);
+            showStatus('SVG exported successfully');
+        }
+
+        // Load template
+        function loadTemplate(type) {
+            const templates = {
+                flowchart: `graph TD
+    A[Start] --> B{Is Valid?}
+    B -->|Yes| C[Process Data]
+    B -->|No| D[Show Error]
+    C --> E[Save Result]
+    D --> E
+    E --> F[End]
+
+    style A fill:#4fc1ff
+    style F fill:#4fc1ff
+    style B fill:#f9d71c
+    style D fill:#f48771`,
+                sequence: `sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant Database
+
+    User->>Frontend: Submit Form
+    Frontend->>Frontend: Validate Input
+    Frontend->>Backend: Send Request
+    Backend->>Backend: Process Data
+    Backend->>Database: Query
+    Database-->>Backend: Return Results
+    Backend-->>Frontend: Send Response
+    Frontend-->>User: Display Result`,
+                gantt: `gantt
+    title Project Timeline
+    dateFormat YYYY-MM-DD
+    section Planning
+    Requirements      :done,    des1, 2024-01-01, 2024-01-05
+    Design             :active,  des2, 2024-01-06, 2024-01-15
+    section Development
+    Backend API        :         des3, 2024-01-16, 2024-02-05
+    Frontend UI        :         des4, 2024-01-20, 2024-02-15
+    section Deployment
+    Testing            :         des5, 2024-02-16, 2024-02-25
+    Launch             :milestone, 2024-03-01, 0d`,
+                class: `classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound()
+    }
+    class Dog {
+        +String breed
+        +bark()
+    }
+    class Cat {
+        +bool isIndoor
+        +meow()
+    }
+    Animal <|-- Dog
+    Animal <|-- Cat`,
+                state: `stateDiagram-v2
+    [*] --> Idle
+    Idle --> Processing: Start
+    Processing --> Validating
+    Validating -->|Success| Processing
+    Validating -->|Failure| Error
+    Error --> Idle: Retry
+    Processing --> Complete: Finish
+    Complete --> [*]`
+            };
+
+            codeEditor.value = templates[type] || '';
+            renderDiagram();
+        }
+
+        // Update cursor position
+        codeEditor.addEventListener('click', updateCursorPosition);
+        codeEditor.addEventListener('keyup', updateCursorPosition);
+
+        function updateCursorPosition() {
+            const pos = codeEditor.selectionStart;
+            const text = codeEditor.value.substring(0, pos);
+            const lines = text.split('\n');
+            const line = lines.length;
+            const col = lines[lines.length - 1].length + 1;
+            cursorPosition.textContent = `Line: ${line}, Col: ${col}`;
+        }
+
+        // Auto-render on Ctrl+Enter or Cmd+Enter
+        codeEditor.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                renderDiagram();
+            }
+        });
+
+        // Resize handle functionality
+        const resizeHandle = document.getElementById('resize-handle');
+        const editorPanel = document.querySelector('.editor-panel');
+        let isResizing = false;
+
+        resizeHandle.addEventListener('mousedown', function(e) {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+
+            const containerWidth = document.querySelector('.main-container').offsetWidth;
+            const newWidth = (e.clientX / containerWidth) * 100;
+
+            if (newWidth > 20 && newWidth < 80) {
+                editorPanel.style.flex = `0 0 ${newWidth}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            isResizing = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        });
+
+        // Load default template on startup
+        loadTemplate('flowchart');
+    </script>
+</body>
+</html>
