@@ -38,6 +38,26 @@ Options for running draw.io:
 - Use the [official Docker image](https://github.com/jgraph/docker-drawio)
 - Download [draw.io Desktop](https://get.diagrams.net)
 
+### Mermaid Workflow Editor
+
+A standalone web tool for creating, editing, and exporting Mermaid diagrams is included in this repository.
+
+**To use:**
+```bash
+open mermaid-editor.html
+```
+Or simply double-click `mermaid-editor.html` in your file manager.
+
+**Features:**
+- Code editor with Mermaid syntax highlighting
+- Live preview panel
+- Pre-built templates (flowcharts, sequence diagrams, Gantt charts, etc.)
+- Load/save Mermaid code files (.mmd)
+- Export diagrams as SVG
+- Keyboard shortcut: `Ctrl+Enter` or `Cmd+Enter` to render
+
+See `MERMAID_EDITOR_README.md` for detailed documentation.
+
 Packaged .war files are available on the [releases page](https://github.com/jgraph/draw.io/releases).
 
 ## Supported Browsers
